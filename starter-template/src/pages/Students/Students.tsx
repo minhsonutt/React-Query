@@ -3,35 +3,49 @@ import { useQuery } from '@tanstack/react-query'
 import { getStudents } from 'apis/students.api'
 import { useQueryString } from 'utils/utils'
 import { Fragment } from 'react'
+import classNames from 'classnames'
 
+const LIMIT = 10
 export default function Students() {
   const queryString = useQueryString()
   const page = Number(queryString.page) || 1
 
   const { data, isLoading } = useQuery({
     queryKey: ['students', page],
-    queryFn: () => getStudents(page, 10)
+    queryFn: () => getStudents(page, 10),
+    keepPreviousData: true
   })
+
+  const totalStudentCount = Number(data?.headers['x-total-count'] || 0)
+
+  const totalPage = Math.ceil(totalStudentCount / LIMIT)
 
   return (
     <div>
       <h1 className='text-lg'>Students</h1>
-
+      <div className='mt-4'>
+        <Link
+          className='mb-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+          to={'/students/add'}
+        >
+          Add new
+        </Link>
+      </div>
       {isLoading && (
         <div role='status' className='mt-6 animate-pulse'>
-          <div className='mb-4 h-4  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
+          <div className='mb-4 h-10 rounded bg-gray-200' />
           <div className='mb-2.5 h-10 rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='mb-2.5 h-10  rounded bg-gray-200' />
-          <div className='h-10  rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='mb-2.5 h-10 rounded bg-gray-200' />
+          <div className='h-10 rounded bg-gray-200' />
           <span className='sr-only'>Loading...</span>
         </div>
       )}
@@ -72,7 +86,7 @@ export default function Students() {
                     <td className='py-4 px-6'>{student.email}</td>
                     <td className='py-4 px-6 text-right'>
                       <Link
-                        to='/students/1'
+                        to={`/students/${student.id}`}
                         className='mr-5 font-medium text-blue-600 hover:underline dark:text-blue-500'
                       >
                         Edit
@@ -89,25 +103,55 @@ export default function Students() {
             <nav aria-label='Page navigation example'>
               <ul className='inline-flex -space-x-px'>
                 <li>
-                  <span className='cursor-not-allowed rounded-l-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700 '>
-                    Previous
-                  </span>
+                  {page === 1 ? (
+                    <span className='cursor-not-allowed rounded-l-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700 '>
+                      Previous
+                    </span>
+                  ) : (
+                    <Link
+                      className='rounded-l-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700 '
+                      to={`/students?page=${page - 1}`}
+                    >
+                      Previous
+                    </Link>
+                  )}
                 </li>
+                {Array(totalPage)
+                  .fill(0)
+                  .map((_, index) => {
+                    const pageNumber = index + 1
+                    const isActive = page === pageNumber
+
+                    return (
+                      <li key={pageNumber}>
+                        <Link
+                          className={classNames(
+                            'border border-gray-300 py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700',
+                            {
+                              'bg-gray-100 text-gray-700': isActive,
+                              'bg-white': !isActive
+                            }
+                          )}
+                          to={`/students?page=${pageNumber}`}
+                        >
+                          {pageNumber}
+                        </Link>
+                      </li>
+                    )
+                  })}
                 <li>
-                  <a
-                    className='border border-gray-300 bg-white bg-white py-2 px-3 leading-tight text-gray-500 text-gray-500  hover:bg-gray-100 hover:bg-gray-100 hover:text-gray-700 hover:text-gray-700'
-                    href='/students?page=8'
-                  >
-                    1
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className='rounded-r-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                    href='/students?page=1'
-                  >
-                    Next
-                  </a>
+                  {page === totalPage ? (
+                    <span className='cursor-not-allowed rounded-r-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
+                      Next
+                    </span>
+                  ) : (
+                    <Link
+                      className='rounded-r-lg border border-gray-300 bg-white py-2 px-3 leading-tight text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      to={`/students?page=${page + 1}`}
+                    >
+                      Next
+                    </Link>
+                  )}
                 </li>
               </ul>
             </nav>
